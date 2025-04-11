@@ -1,47 +1,65 @@
 import { useEffect, useRef, useState } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 
 const QrScanner = () => {
   const [result, setResult] = useState('');
-  const scannerRef = useRef(null);
+  const [scanning, setScanning] = useState(false);
+  const html5QrCodeRef = useRef(null);
+  const qrRegionId = 'qr-reader';
 
-  useEffect(() => {
-    if (!scannerRef.current) {
-      const scanner = new Html5QrcodeScanner('qr-reader', {
-        fps: 10,
-        qrbox: {
-          width: 250,
-          height: 250,
-        },
-      });
+  const startScanner = async () => {
+    setScanning(true);
 
-      scanner.render(
+    const config = {
+      fps: 10,
+      qrbox: { width: 250, height: 250 },
+    };
+
+    const html5QrCode = new Html5Qrcode(qrRegionId);
+    html5QrCodeRef.current = html5QrCode;
+
+    try {
+      await html5QrCode.start(
+        { facingMode: 'environment' },
+        config,
         (decodedText) => {
           setResult(decodedText);
-          scanner.clear();
+          html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            setScanning(false);
+          });
         },
         (error) => {
-          // Можно логировать ошибки при желании
+          // Ошибки можно логировать при необходимости
         }
       );
-
-      scannerRef.current = scanner;
+    } catch (err) {
+      console.error('Ошибка при доступе к камере:', err);
+      setScanning(false);
     }
-  }, []);
+  };
 
   return (
     <div style={styles.wrapper}>
       <h2 style={styles.heading}>🔍 Сканер QR СБП</h2>
 
-      <div id="qr-reader" style={styles.scanner}></div>
+      {!scanning && !result && (
+        <button onClick={startScanner} style={styles.button}>
+          Начать сканирование
+        </button>
+      )}
 
-      {result ? (
+      <div id={qrRegionId} style={styles.scanner}></div>
+
+      {result && (
         <div style={styles.result}>
           <strong>📋 Сканированные данные:</strong>
           <br />
           <span>{result}</span>
         </div>
-      ) : (
+      )}
+
+      {!result && scanning && (
         <div style={styles.infoText}>
           Наведите камеру на QR код, чтобы начать сканирование.
         </div>
@@ -66,6 +84,16 @@ const styles = {
   heading: {
     textAlign: 'center',
     fontSize: '1.5rem',
+    marginBottom: '1rem',
+  },
+  button: {
+    padding: '0.8rem 1.2rem',
+    backgroundColor: '#00aaff',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    cursor: 'pointer',
     marginBottom: '1rem',
   },
   scanner: {
