@@ -78,6 +78,7 @@ const styles = {
     height: '100%',
     objectFit: 'cover',
     display: 'block',
+    backgroundColor: 'red',
     opacity: 1,
   },
   result: {
