@@ -1,26 +1,39 @@
-import { useState } from 'react';
-import { QrReader } from 'react-qr-reader';
+import { useEffect, useRef, useState } from 'react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 const QrScanner = () => {
   const [result, setResult] = useState('');
+  const scannerRef = useRef(null);
+
+  useEffect(() => {
+    if (!scannerRef.current) {
+      const scanner = new Html5QrcodeScanner('qr-reader', {
+        fps: 10,
+        qrbox: {
+          width: 250,
+          height: 250,
+        },
+      });
+
+      scanner.render(
+        (decodedText) => {
+          setResult(decodedText);
+          scanner.clear();
+        },
+        (error) => {
+          // Можно логировать ошибки при желании
+        }
+      );
+
+      scannerRef.current = scanner;
+    }
+  }, []);
 
   return (
     <div style={styles.wrapper}>
       <h2 style={styles.heading}>🔍 Сканер QR СБП</h2>
 
-      <div style={styles.scanner}>
-        <QrReader
-          onResult={(result, error) => {
-            if (!!result) {
-              setResult(result?.text);
-            }
-          }}
-          constraints={{ facingMode: 'environment' }}
-          containerStyle={styles.qrContainer}
-          videoContainerStyle={styles.videoContainer}
-          videoStyle={styles.video}
-        />
-      </div>
+      <div id="qr-reader" style={styles.scanner}></div>
 
       {result ? (
         <div style={styles.result}>
@@ -59,27 +72,9 @@ const styles = {
     border: '2px dashed #666',
     borderRadius: '12px',
     overflow: 'hidden',
-    position: 'relative',
     width: '100%',
-    aspectRatio: '1 / 1', // квадрат
-  },
-  qrContainer: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  },
-  videoContainer: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  },
-  video: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    display: 'block',
-    backgroundColor: 'red',
-    opacity: 1,
+    aspectRatio: '1 / 1',
+    backgroundColor: '#000',
   },
   result: {
     marginTop: '1.5rem',
