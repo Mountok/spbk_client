@@ -16,22 +16,19 @@ const QrScanner = () => {
             }
           }}
           constraints={{ facingMode: 'environment' }}
-          containerStyle={{ width: '100%' }}
-          videoStyle={{ width: '100%' }}
+          containerStyle={styles.qrContainer}
+          videoContainerStyle={styles.videoContainer}
+          videoStyle={styles.video}
         />
       </div>
 
-      {/* Отображаем результат сканирования */}
-      {result && (
+      {result ? (
         <div style={styles.result}>
           <strong>📋 Сканированные данные:</strong>
           <br />
           <span>{result}</span>
         </div>
-      )}
-
-      {/* Если нет результата, можно вывести подсказку */}
-      {!result && (
+      ) : (
         <div style={styles.infoText}>
           Наведите камеру на QR код, чтобы начать сканирование.
         </div>
@@ -49,6 +46,9 @@ const styles = {
     color: '#fff',
     backgroundColor: '#1e1e1e',
     minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
   },
   heading: {
     textAlign: 'center',
@@ -59,6 +59,26 @@ const styles = {
     border: '2px dashed #666',
     borderRadius: '12px',
     overflow: 'hidden',
+    position: 'relative',
+    width: '100%',
+    aspectRatio: '1 / 1', // квадрат
+  },
+  qrContainer: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+  },
+  videoContainer: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+  },
+  video: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    display: 'block',
+    opacity: 1,
   },
   result: {
     marginTop: '1.5rem',
