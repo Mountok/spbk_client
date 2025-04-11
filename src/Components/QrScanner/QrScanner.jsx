@@ -1,11 +1,45 @@
 import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
+import axios from 'axios';
 
 const QrScanner = () => {
   const [result, setResult] = useState('');
   const [scanning, setScanning] = useState(false);
   const html5QrCodeRef = useRef(null);
   const qrRegionId = 'qr-reader';
+
+  // Функция для отправки данных на сервер
+  const sendRequest = async (amount, from, to) => {
+    try {
+      const response = await axios.post('https://sbpk-server.onrender.com/convert', {
+        amount,
+        from,
+        to,
+      });
+
+      // Обрабатываем ответ от сервера
+      console.log('Ответ от сервера:', response.data);
+      // Если сервер вернул данные, можно показать их
+      setResult(`Конвертированная сумма: ${response.data.convertedAmount}`);
+    } catch (error) {
+      console.error('Ошибка при отправке запроса:', error);
+    }
+  };
+
+  // Функция для парсинга URL и извлечения параметров
+  const parseQRCodeData = (qrData) => {
+    try {
+      const urlParams = new URLSearchParams(new URL(qrData).search);
+      const amount = parseFloat(urlParams.get('sum')) / 100; // Делим на 100, если сумма в копейках
+      const from = urlParams.get('cur');
+      const to = 'USDT'; // Целевая валюта (вы можете изменить на динамическую, если нужно)
+      
+      // Отправляем данные на сервер
+      sendRequest(amount, from, to);
+    } catch (error) {
+      console.error('Ошибка при парсинге QR данных:', error);
+    }
+  };
 
   const startScanner = async () => {
     setScanning(true);
@@ -28,6 +62,9 @@ const QrScanner = () => {
             html5QrCode.clear();
             setScanning(false);
           });
+
+          // Парсим данные из QR кода
+          parseQRCodeData(decodedText);
         },
         (error) => {
           // Ошибки можно логировать при необходимости
@@ -53,7 +90,7 @@ const QrScanner = () => {
 
       {result && (
         <div style={styles.result}>
-          <strong>📋 Сканированные данные:</strong>
+          <strong>📋 Результат:</strong>
           <br />
           <span>{result}</span>
         </div>
