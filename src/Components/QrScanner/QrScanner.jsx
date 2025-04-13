@@ -10,6 +10,11 @@ const QrScanner = () => {
 
   // Функция для отправки данных на сервер
   const sendRequest = async (amount, from, to) => {
+    console.log({
+      amount,
+      from,
+      to,
+    })
     try {
       const response = await axios.post('https://sbpk-server.onrender.com/convert', {
         amount,
@@ -20,7 +25,7 @@ const QrScanner = () => {
       // Обрабатываем ответ от сервера
       console.log('Ответ от сервера:', response.data);
       // Если сервер вернул данные, можно показать их
-      setResult(`Конвертированная сумма: ${response.data.convertedAmount}`);
+      setResult(`Конвертированная сумма: ${response.data.message}`);
     } catch (error) {
       console.error('Ошибка при отправке запроса:', error);
     }
@@ -92,7 +97,7 @@ const QrScanner = () => {
         <div style={styles.result}>
           <strong>📋 Результат:</strong>
           <br />
-          <span>{result}</span>
+          <span>{result} USDT</span>
         </div>
       )}
 
